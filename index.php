@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function searchBooks($query, $genre) {
-    $apiKey = 'AIzaSyB2P3XV5HIiHfW2V6Ihc';
+    $apiKey = 'AIzaSyB2P3XV5HIiHfW2V6qfniPsf10b-K_6Ihc';
     $url = "https://www.googleapis.com/books/v1/volumes?q=" . urlencode($query);
     if ($genre) {
         $url .= "+subject:" . urlencode($genre);
