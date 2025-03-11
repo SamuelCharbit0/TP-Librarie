@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function searchBooks($query, $genre) {
-    $apiKey = 'clé API';
+    $apiKey = 'API key';
     $url = "https://www.googleapis.com/books/v1/volumes?q=" . urlencode($query);
     if ($genre) {
         $url .= "+subject:" . urlencode($genre);
@@ -75,7 +75,7 @@ function searchBooks($query, $genre) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book App</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="CSS/style.css">
 </head>
 <body>
     <div class="profile-link">
@@ -120,7 +120,6 @@ function searchBooks($query, $genre) {
     </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const apiKey = 'AIzaSyB2P3XV5HIiHfW2V6qfniPsf10b-K_6Ihc';
     const searchForm = document.getElementById('searchForm');
     const resultsDiv = document.getElementById('results');
 
@@ -128,7 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const query = document.getElementById('query').value;
         const genre = document.getElementById('genre').value;
-        const url = `https://www.googleapis.com/books/v1/volumes?q=${query}${genre ? `+categories:${genre}` : ''}&key=${apiKey}&maxResults=40`;
+        const apiKey = 'AIzaSyB2P3XV5HIiHfW2V6qfniPsf10b-K_6Ihc';
+
+        // Construction de l'URL avec des opérateurs logiques pour combiner le titre et le genre
+        const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}+subject:${encodeURIComponent(genre)}&key=${apiKey}&maxResults=40`;
+
         const response = await fetch(url);
         const data = await response.json();
         displayResults(data.items);
@@ -136,25 +139,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayResults(books) {
         resultsDiv.innerHTML = '';
-        books.forEach(book => {
-            const bookDiv = document.createElement('div');
-            bookDiv.classList.add('book');
-            bookDiv.innerHTML = `
-                <img src="${book.volumeInfo.imageLinks?.thumbnail || 'default-image-url.jpg'}" alt="${book.volumeInfo.title}">
-                <h3>${book.volumeInfo.title}</h3>
-                <p>${book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown Author'}</p>
-                <button class="add-favorite" data-book-id="${book.id}" data-title="${book.volumeInfo.title}" data-authors="${book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown Author'}" data-image="${book.volumeInfo.imageLinks?.thumbnail || 'default-image-url.jpg'}">Add to Favorites</button>
-            `;
-            resultsDiv.appendChild(bookDiv);
-        });
+        if (books) {
+            books.forEach(book => {
+                const bookDiv = document.createElement('div');
+                bookDiv.classList.add('book');
+                bookDiv.innerHTML = `
+                    <img src="${book.volumeInfo.imageLinks?.thumbnail || 'default-image-url.jpg'}" alt="${book.volumeInfo.title}">
+                    <h3>${book.volumeInfo.title}</h3>
+                    <p>${book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown Author'}</p>
+                    <button class="add-favorite" data-book-id="${book.id}" data-title="${book.volumeInfo.title}" data-authors="${book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown Author'}" data-image="${book.volumeInfo.imageLinks?.thumbnail || 'default-image-url.jpg'}">Add to Favorites</button>
+                `;
+                resultsDiv.appendChild(bookDiv);
+            });
 
-        document.querySelectorAll('.add-favorite').forEach(button => {
-            button.addEventListener('click', addToFavorites);
-        });
+            document.querySelectorAll('.add-favorite').forEach(button => {
+                button.addEventListener('click', addToFavorites);
+            });
 
-        document.querySelectorAll('.remove-favorite').forEach(button => {
-            button.addEventListener('click', removeFromFavorites);
-        });
+            document.querySelectorAll('.remove-favorite').forEach(button => {
+                button.addEventListener('click', removeFromFavorites);
+            });
+        } else {
+            resultsDiv.innerHTML = '<p>Aucun résultat trouvé.</p>';
+        }
     }
 
     function addToFavorites(event) {
@@ -163,8 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = button.getAttribute('data-title');
         const authors = button.getAttribute('data-authors');
         const image = button.getAttribute('data-image');
-
-        console.log('Adding to favorites:', bookId, title, authors, image);
 
         fetch('profil.php', {
             method: 'POST',
@@ -194,8 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeFromFavorites(event) {
         const button = event.target;
         const bookId = button.getAttribute('data-book-id');
-
-        console.log('Removing from favorites:', bookId);
 
         fetch('profil.php', {
             method: 'POST',
